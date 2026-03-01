@@ -1278,7 +1278,7 @@ let tryDate = {1:"", 2:"", 3:""};
 let tryScore = {1:null, 2:null, 3:null};
 
 let stateAnswers = {1:["",""], 2:["",""], 3:["",""]};
-let stateMarks   = {1:["",""], 2:["",""] ,3:["",""]};
+let stateMarks   = {1:["",""], 2:["",""], 3:["",""]};
 
 function loadSavedAudioSettings(){
   try{
@@ -1392,11 +1392,13 @@ function setCurrentTry(t){
 
 /* ======================
    TTS (teacher-adjustable voice / speed / pause)
-   stronger anti-clipping version
+   locked mode: page will not interrupt its own audio
    ====================== */
 let speechTimers = [];
 let activeUtterance = null;
 let ttsPrimed = false;
+let speechLock = false;
+let speechRunToken = 0;
 
 function clearSpeechTimers(){
   speechTimers.forEach(t=>clearTimeout(t));
@@ -1522,6 +1524,51 @@ function makeUtterance(text, opts = {}){
   return u;
 }
 
+function syncAudioUiBusy(){
+  document.querySelectorAll(".hear").forEach(btn=>{
+    const t = +btn.dataset.try;
+    const baseDisabled = (!tryUnlocked[t]) || marked[t];
+    btn.disabled = speechLock || baseDisabled;
+  });
+
+  document.querySelectorAll(".ans").forEach(inp=>{
+    const m = (inp.id || "").match(/^in-t(\d+)-(\d+)$/);
+    const t = m ? +m[1] : 1;
+    const baseDisabled = (!tryUnlocked[t]) || marked[t];
+    inp.disabled = speechLock || baseDisabled;
+  });
+
+  document.querySelectorAll("[data-marktry]").forEach(btn=>{
+    btn.disabled = speechLock;
+  });
+
+  if(voiceSel) voiceSel.disabled = speechLock;
+  if(speedSel) speedSel.disabled = speechLock;
+  if(pauseSel) pauseSel.disabled = speechLock;
+
+  if(previewAudioBtn) previewAudioBtn.disabled = speechLock;
+  if(saveAudioSettingsBtn) saveAudioSettingsBtn.disabled = speechLock;
+  if(resetAudioSettingsBtn) resetAudioSettingsBtn.disabled = speechLock;
+
+  if(unlockAudioBtn) unlockAudioBtn.disabled = speechLock || unlocked;
+  if(unlock2Btn) unlock2Btn.disabled = speechLock;
+  if(unlock3Btn) unlock3Btn.disabled = speechLock;
+  if(teacherBtn) teacherBtn.disabled = speechLock;
+  if(exportBtn) exportBtn.disabled = speechLock;
+  if(resetBtn) resetBtn.disabled = speechLock;
+  if(sessionSel) sessionSel.disabled = speechLock;
+
+  if(importFile) importFile.disabled = speechLock;
+  if(importRecordsFile) importRecordsFile.disabled = speechLock;
+}
+
+function releaseSpeechLock(runId){
+  if(runId !== speechRunToken) return;
+  speechLock = false;
+  activeUtterance = null;
+  syncAudioUiBusy();
+}
+
 function primeTTS(){
   return new Promise((resolve)=>{
     if(!("speechSynthesis" in window) || !unlocked){
@@ -1568,18 +1615,33 @@ async function speak(text){
   if(!soundOn.checked) return;
   if(!("speechSynthesis" in window)) return;
   if(!unlocked) return;
+  if(speechLock) return;
+
+  const runId = ++speechRunToken;
+  speechLock = true;
+  syncAudioUiBusy();
 
   stopSpeech();
   await primeTTS();
 
+  if(runId !== speechRunToken){
+    releaseSpeechLock(runId);
+    return;
+  }
+
   const u = makeUtterance(text);
   activeUtterance = u;
+
+  u.onend = () => releaseSpeechLock(runId);
+  u.onerror = () => releaseSpeechLock(runId);
 
   const timer = setTimeout(()=>{
     try{
       window.speechSynthesis.resume();
       window.speechSynthesis.speak(u);
-    }catch(e){}
+    }catch(e){
+      releaseSpeechLock(runId);
+    }
   }, 120);
 
   speechTimers.push(timer);
@@ -1589,6 +1651,7 @@ async function speakSequence(parts, gapMs){
   if(!soundOn.checked) return;
   if(!("speechSynthesis" in window)) return;
   if(!unlocked) return;
+  if(speechLock) return;
 
   const cleanParts = (parts || [])
     .map(x => normalizeSpeechText(x))
@@ -1598,13 +1661,34 @@ async function speakSequence(parts, gapMs){
 
   const pause = Number.isFinite(gapMs) ? gapMs : getSelectedPause();
 
+  const runId = ++speechRunToken;
+  speechLock = true;
+  syncAudioUiBusy();
+
   stopSpeech();
   await primeTTS();
 
+  if(runId !== speechRunToken){
+    releaseSpeechLock(runId);
+    return;
+  }
+
   let i = 0;
 
+  function finishRun(){
+    releaseSpeechLock(runId);
+  }
+
   function playNext(){
-    if(i >= cleanParts.length) return;
+    if(runId !== speechRunToken){
+      finishRun();
+      return;
+    }
+
+    if(i >= cleanParts.length){
+      finishRun();
+      return;
+    }
 
     const isSingleWord = /^[A-Za-z'-]+[.!?]?$/.test(cleanParts[i]);
     const rate = isSingleWord
@@ -1615,18 +1699,32 @@ async function speakSequence(parts, gapMs){
     activeUtterance = u;
 
     u.onend = () => {
+      if(runId !== speechRunToken){
+        finishRun();
+        return;
+      }
+
       i++;
       if(i < cleanParts.length){
         const timer = setTimeout(playNext, pause);
         speechTimers.push(timer);
+      }else{
+        finishRun();
       }
     };
 
     u.onerror = () => {
+      if(runId !== speechRunToken){
+        finishRun();
+        return;
+      }
+
       i++;
       if(i < cleanParts.length){
         const timer = setTimeout(playNext, pause);
         speechTimers.push(timer);
+      }else{
+        finishRun();
       }
     };
 
@@ -1634,7 +1732,9 @@ async function speakSequence(parts, gapMs){
       try{
         window.speechSynthesis.resume();
         window.speechSynthesis.speak(u);
-      }catch(e){}
+      }catch(e){
+        finishRun();
+      }
     }, 150);
 
     speechTimers.push(timer);
@@ -1698,6 +1798,8 @@ function rebuildAll(){
       if(mk) mk.innerHTML = (stateMarks[t]?.[i] ?? "");
     }
   }
+
+  syncAudioUiBusy();
 }
 
 document.addEventListener("input", (e)=>{
@@ -1772,6 +1874,7 @@ function unlockTry(t){
     if(spk) spk.disabled = false;
   }
   setCurrentTry(t);
+  syncAudioUiBusy();
   return true;
 }
 unlock2Btn.addEventListener("click", ()=>unlockTry(2));
@@ -1961,6 +2064,8 @@ function markTry(t){
       ? `Well done. You have mastered it. You got ${correct} out of ${total}.`
       : `Keep going. You got ${correct} out of ${total}.`);
   }
+
+  syncAudioUiBusy();
 }
 
 document.addEventListener("click", (e)=>{
@@ -2000,7 +2105,7 @@ function buildExportJson(){
   }
 
   return {
-    version: "pm-spelling-auto-mark-v5",
+    version: "pm-spelling-auto-mark-v6",
     exportedAt: new Date().toISOString(),
     sessionKey: sessionSel.value,
     sessionInfo: {...SESSION_INFO},
@@ -2060,6 +2165,7 @@ importFile.addEventListener("change", async (e)=>{
     if(data.audioSettings){
       applyAudioSettings(data.audioSettings, {persist:true});
       restoredAudio = true;
+      ttsPrimed = false;
     }
 
     for(const t of [1,2,3]){
@@ -2264,6 +2370,7 @@ teacherSearch.addEventListener("input", ()=>renderTeacherTable(teacherSearch.val
 
 voiceSel.addEventListener("change", ()=>{
   desiredVoiceKey = voiceSel.value || DEFAULT_AUDIO_SETTINGS.voice;
+  ttsPrimed = false;
 });
 
 previewAudioBtn.addEventListener("click", ()=>{
@@ -2287,6 +2394,7 @@ saveAudioSettingsBtn.addEventListener("click", ()=>{
 
 resetAudioSettingsBtn.addEventListener("click", ()=>{
   resetAudioSettingsToDefault();
+  ttsPrimed = false;
   alert("Audio settings reset to default.");
 });
 
