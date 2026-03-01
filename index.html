@@ -819,7 +819,7 @@
           <div><b>1. Key in pupil name</b> at the top of the page.</div>
           <div><b>2. Choose the session</b> from the session dropdown.</div>
           <div><b>3. Click “Unlock Audio”</b> once before using the speaker buttons.</div>
-          <div><b>4. Click 🔊</b> beside a word to play the audio in this format: <b>word → sentence → word</b>. The <b>first and last word are slightly slower</b> for better clarity.</div>
+          <div><b>4. Click 🔊</b> beside a word to play the audio in this format: <b>word → sentence → word</b>.</div>
           <div><b>5. Open Teacher Panel</b> to adjust <b>Voice</b>, <b>Speed</b>, and <b>Pause</b>. Use <b>Preview Audio</b> to test it.</div>
           <div><b>6. Click “Save Audio Settings”</b> if you want this browser to remember your preferred audio settings.</div>
           <div><b>7. Pupils type their spelling</b>, then click <b>MARK</b> for that try.</div>
@@ -846,369 +846,10 @@
    - Students ONLY type spelling (no slashes).
    ========================================================== */
 
-const SESSION_BANK = {
-  C1S1:{title:"C1S1 — Review consonant and vowel graphs", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-  C1S2:{title:"C1S2 — Digraphs [ch, sh, th]", markingMode:"phonogram", targets:["ch","sh","th"], hint:"Marking: only the target phonogram must be correct (ch / sh / th)."},
-  C1S3:{title:"C1S3 — CCVC words (blend accurately)", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-
-  C2S1:{title:"C2S1 — Floss rule [-ff, -ll, -ss, -zz]", markingMode:"phonogram", targets:["ff","ll","ss","zz"], hint:"Marking: only the target phonogram must be correct (ff/ll/ss/zz)."},
-  C2S2:{title:"C2S2 — -ck rule", markingMode:"phonogram", targets:["ck"], hint:"Marking: only the target phonogram must be correct (ck)."},
-  C2S3:{title:"C2S3 — -tch rule", markingMode:"phonogram", targets:["tch"], hint:"Marking: only the target phonogram must be correct (tch)."},
-
-  C3S1:{title:"C3S1 — -dge rule", markingMode:"phonogram", targets:["dge"], hint:"Marking: only the target phonogram must be correct (dge)."},
-  C3S2:{title:"C3S2 — Magic-e rule", markingMode:"phonogram", targets:["a_e","e_e","i_e","o_e","u_e"], hint:"Marking: whole word must match the magic-e pattern."},
-  C3S3:{title:"C3S3 — CCVC & CCVCe words (blend accurately)", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-
-  C4S1:{title:"C4S1 — Closed syllables, smaller words, short vowel", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-  C4S2:{title:"C4S2 — Open syllables, long vowel sounds", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-  C4S3:{title:"C4S3 — VC/CV words", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-
-  C5S1:{title:"C5S1 — VC/V, V/CV words", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-  C5S2:{title:"C5S2 — Schwa concept", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-  C5S3:{title:"C5S3 — CVCC & multisyllabic words", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-
-  C6S1:{title:"C6S1 — Consonant -le blends [-ble, -dle]", markingMode:"phonogram", targets:["ble","dle"], hint:"Marking: only the target phonogram must be correct (-ble / -dle)."},
-  C6S2:{title:"C6S2 — Consonant -le blends [-ple, -tle, -gle]", markingMode:"phonogram", targets:["ple","tle","gle"], hint:"Marking: only the target phonogram must be correct (-ple / -tle / -gle)."},
-  C6S3:{title:"C6S3 — r-controlled vowels [ar, or]", markingMode:"phonogram", targets:["ar","or"], hint:"Marking: only the target phonogram must be correct (ar / or)."},
-
-  C7S1:{title:"C7S1 — r-controlled vowels [ir, er, ur]", markingMode:"phonogram", targets:["ir","er","ur"], hint:"Marking: only the target phonogram must be correct (ir / er / ur)."},
-  C7S2:{title:"C7S2 — 'y' as /ĭ/, 'y' as /ē/", markingMode:"phonogram", targets:["y"], hint:"Marking: focus on the target phonogram (y)."},
-  C7S3:{title:"C7S3 — CCVCC & multisyllabic words (blend/syllabicate)", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-
-  C8S1:{title:"C8S1 — Soft 'c' & Soft 'g' rule", markingMode:"phonogram", targets:["c","g"], hint:"Marking: focus on the target phonogram (soft c / soft g)."},
-  C8S2:{title:"C8S2 — Vowel teams ('ay', 'ai' say /ā/)", markingMode:"phonogram", targets:["ay","ai"], hint:"Marking: only the target phonogram must be correct (ay / ai)."},
-  C8S3:{title:"C8S3 — Multisyllabic words", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-
-  C9S1:{title:"C9S1 — Vowel team [ee] says /ē/", markingMode:"phonogram", targets:["ee"], hint:"Marking: only the target phonogram must be correct (ee)."},
-  C9S2:{title:"C9S2 — Vowel team [ea] says /ē/ or /ĕ/", markingMode:"phonogram", targets:["ea"], hint:"Marking: only the target phonogram must be correct (ea)."},
-  C9S3:{title:"C9S3 — Vowel team [ie] says /ī/ or /ē/", markingMode:"phonogram", targets:["ie"], hint:"Marking: only the target phonogram must be correct (ie)."},
-
-  C10S1:{title:"C10S1 — Vowel team [ei] says /ē/ or /ā/", markingMode:"phonogram", targets:["ei"], hint:"Marking: only the target phonogram must be correct (ei)."},
-  C10S2:{title:"C10S2 — Vowel team [ey] says /ā/ or /ē/", markingMode:"phonogram", targets:["ey"], hint:"Marking: only the target phonogram must be correct (ey)."},
-  C10S3:{title:"C10S3 — CCCVC, CCCVCC and multisyllabic words", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-
-  C11S1:{title:"C11S1 — Vowel teams [oa, ow] says /ō/", markingMode:"phonogram", targets:["oa","ow"], hint:"Marking: only the target phonogram must be correct (oa / ow)."},
-  C11S2:{title:"C11S2 — Vowel team [oo] long & short sounds", markingMode:"phonogram", targets:["oo"], hint:"Marking: only the target phonogram must be correct (oo)."},
-  C11S3:{title:"C11S3 — Vowel teams [ue, ew, ui] say /oo/", markingMode:"phonogram", targets:["ue","ew","ui"], hint:"Marking: only the target phonogram must be correct (ue / ew / ui)."},
-
-  C12S1:{title:"C12S1 — Vowel teams [ue, ew] say /ū/", markingMode:"phonogram", targets:["ue","ew"], hint:"Marking: only the target phonogram must be correct (ue / ew)."},
-  C12S2:{title:"C12S2 — Vowel team [aw] says /aw/", markingMode:"phonogram", targets:["aw"], hint:"Marking: only the target phonogram must be correct (aw)."},
-  C12S3:{title:"C12S3 — Multisyllabic words with vowel teams", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-
-  C13S1:{title:"C13S1 — Vowel teams [ou, ow] says /ow/", markingMode:"phonogram", targets:["ou","ow"], hint:"Marking: only the target phonogram must be correct (ou / ow)."},
-  C13S2:{title:"C13S2 — Vowel teams [oi, oy] say /oi/", markingMode:"phonogram", targets:["oi","oy"], hint:"Marking: only the target phonogram must be correct (oi / oy)."},
-  C13S3:{title:"C13S3 — Vowel team [igh] says /ī/", markingMode:"phonogram", targets:["igh"], hint:"Marking: only the target phonogram must be correct (igh)."},
-
-  C14S1:{title:"C14S1 — Consonant digraph [kn] says /n/", markingMode:"phonogram", targets:["kn"], hint:"Marking: only the target phonogram must be correct (kn)."},
-  C14S2:{title:"C14S2 — Consonant digraph [ng] says /ŋ/, [nk] says /ŋk/", markingMode:"phonogram", targets:["ng","nk"], hint:"Marking: only the target phonogram must be correct (ng / nk)."},
-  C14S3:{title:"C14S3 — Multisyllabic words", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-
-  C15S1:{title:"C15S1 — Revision of multisyllabic words", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-  C15S2:{title:"C15S2 — Revision of multisyllabic words", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-  C15S3:{title:"C15S3 — Revision of multisyllabic words", markingMode:"full", hint:"Marking: whole word spelling must be correct."},
-
-  C16S1:{title:"C16S1 — Plural suffixes '-s' and '-es'", markingMode:"affix", targets:["es","s"], hint:"Marking: only the target suffix must be correct (-s / -es)."},
-  C16S2:{title:"C16S2 — Past Tense Suffix '-ed'", markingMode:"affix", targets:["ed"], hint:"Marking: only the target suffix must be correct (-ed)."},
-  C16S3:{title:"C16S3 — Prefixes 'un-' and 'in-'", markingMode:"affix", targets:["un","in"], hint:"Marking: only the target prefix must be correct (un- / in-)."},
-
-  C17S1:{title:"C17S1 — Suffixes '-ing' and '-ful'", markingMode:"affix", targets:["ing","ful"], hint:"Marking: only the target suffix must be correct (-ing / -ful)."},
-  C17S2:{title:"C17S2 — Prefixes 're-' and 'dis-'", markingMode:"affix", targets:["re","dis"], hint:"Marking: only the target prefix must be correct (re- / dis-)."},
-  C17S3:{title:"C17S3 — Comparative/Superlative suffixes '-er' and '-est'", markingMode:"affix", targets:["est","er"], hint:"Marking: only the target suffix must be correct (-er / -est)."},
-
-  C18S1:{title:"C18S1 — Prefix 'mis-'", markingMode:"affix", targets:["mis"], hint:"Marking: only the target prefix must be correct (mis-)."},
-  C18S2:{title:"C18S2 — Prefix 'pre-'", markingMode:"affix", targets:["pre"], hint:"Marking: only the target prefix must be correct (pre-)."},
-  C18S3:{title:"C18S3 — Suffix '-less'", markingMode:"affix", targets:["less"], hint:"Marking: only the target suffix must be correct (-less)."}
-};
-
-const TRIES_BANK = {
-  C1S1:{
-    1:[{word:"map",sentence:"Map. We can use a map to find our way home. Map."},{word:"cut",sentence:"Cut. I cut my finger during art class. Cut."}],
-    2:[{word:"fix",sentence:"Fix. We have to fix the broken chair. Fix."},{word:"sun",sentence:"Sun. The sun is shining so brightly today. Sun."}],
-    3:[{word:"hot",sentence:"Hot. Water becomes very hot after it is boiled. Hot."},{word:"hid",sentence:"Hid. He hid from his friends during the game. Hid."}]
-  },
-  C1S2:{
-    1:[{word:"much",sentence:"Much. I love my parents so much. Much."},{word:"with",sentence:"With. I went to the zoo with my family over the weekend. With."}],
-    2:[{word:"shut",sentence:"Shut. Please shut the door behind you. Shut."},{word:"that",sentence:"That. This is my table, and that is yours. That."}],
-    3:[{word:"chat",sentence:"Chat. I had a long chat with my teacher. Chat."},{word:"then",sentence:"Then. I packed my bag and then went to school. Then."}]
-  },
-  C1S3:{
-    1:[{word:"spot",sentence:"Spot. There is a black spot on that dog. Spot."},{word:"gram",sentence:"Gram. What are some items that weigh a gram? Gram."}],
-    2:[{word:"plan",sentence:"Plan. Let us plan a trip to the zoo. Plan."},{word:"skin",sentence:"Skin. Our is covered with skin. Skin."}],
-    3:[{word:"step",sentence:"Step. Take a step forward so you can see better. Step."},{word:"plus",sentence:"Plus. One plus two is equals to three. Plus."}]
-  },
-
-  C2S1:{
-    1:[{word:"fill",sentence:"Fill. Fill up your water bottle before PE lesson. Fill."},{word:"dress",sentence:"Dress. She bought a new dress to wear for her birthday party. Dress."}],
-    2:[{word:"stuff",sentence:"Stuff. Eat slowly and do not stuff the food into your mouth. Stuff."},{word:"miss",sentence:"Miss. I will miss my friend when he goes to another school. Miss."}],
-    3:[{word:"less",sentence:"Less. He ate less rice today as he was not hungry. Less."},{word:"jazz",sentence:"Jazz. He listens to jazz music to relax. Jazz."}]
-  },
-  C2S2:{
-    1:[{word:"clock",sentence:"Clock. I can hear the clock ticking away. Clock."},{word:"quick",sentence:"Quick. She was very quick to finish her homework. Quick."}],
-    2:[{word:"pick",sentence:"Pick. We should pick a place to dine at. Pick."},{word:"rock",sentence:"Rock. He threw a rock and broke the window. Rock."}],
-    3:[{word:"check",sentence:"Check. Please check your work before you submit it. Check."},{word:"track",sentence:"Track. We run on the school track during PE. Track."}]
-  },
-  C2S3:{
-    1:[{word:"catch",sentence:"Catch. I jumped up to catch the ball. Catch."},{word:"stitch",sentence:"Stitch. My mother helped to stitch my torn pants. Stitch."}],
-    2:[{word:"pitch",sentence:"Pitch. She sings in a very high pitch. Pitch."},{word:"hatch",sentence:"Hatch. The chicken’s eggs will hatch in a week. Hatch."}],
-    3:[{word:"clutch",sentence:"Clutch. The children clutch their mother’s hand tightly. Clutch."},{word:"fetch",sentence:"Fetch. My grandparents fetch me home after school. Fetch."}]
-  },
-
-  C3S1:{
-    1:[{word:"judge",sentence:"Judge. The judge decided that the person was guilty. Judge."},{word:"fridge",sentence:"Fridge. She placed the ice-cream in the fridge. Fridge."}],
-    2:[{word:"pledge",sentence:"Pledge. We say the Singapore pledge every morning. Pledge."},{word:"badge",sentence:"Badge. He pinned the badge to his shirt. Badge."}],
-    3:[{word:"bridge",sentence:"Bridge. We will reach the place after we cross this bridge. Bridge."},{word:"lodge",sentence:"Lodge. We stayed in a lodge during our vacation. Lodge."}]
-  },
-  C3S2:{
-    1:[{word:"shape",sentence:"Shape. The square is my favourite shape. Shape."},{word:"these",sentence:"These. These are my favourite food. These."}],
-    2:[{word:"hope",sentence:"Hope. I hope I get a good score on my test. Hope."},{word:"five",sentence:"Five. My little sister is five years old. Five."}],
-    3:[{word:"side",sentence:"Side. My friend sits on my right side in class. Side."},{word:"tube",sentence:"Tube. I bought a tube of toothpaste from the supermarket. Tube."}]
-  },
-  C3S3:{
-    1:[{word:"frog",sentence:"Frog. The frog jumped from one leaf to another. Frog."},{word:"plane",sentence:"Plane. We took a plane to England. Plane."}],
-    2:[{word:"shrug",sentence:"Shrug. I shrug when I do not know the answer. Shrug."},{word:"state",sentence:"State. Ice is a solid state of water. State."}],
-    3:[{word:"broke",sentence:"Broke. I broke my glasses when I fell down. Broke."},{word:"stop",sentence:"Stop. Stop calling your classmates names. Stop."}]
-  },
-
-  C4S1:{
-    1:[{word:"backpack",sentence:"Backpack. The backpack was too heavy for my shoulders. Backpack."},{word:"cannot",sentence:"Cannot. I cannot see the whiteboard. Cannot."}],
-    2:[{word:"sunset",sentence:"Sunset. I love watching the sunset in the evening. Sunset."},{word:"kidnap",sentence:"Kidnap. It is a crime to kidnap another person. Kidnap."}],
-    3:[{word:"pumpkin",sentence:"Pumpkin. A pumpkin is a round orange melon. Pumpkin."},{word:"upset",sentence:"Upset. The boy felt upset when he lost his toy. Upset."}]
-  },
-  C4S2:{
-    1:[{word:"hero",sentence:"Hero. Batman is my favourite hero. Hero."},{word:"me",sentence:"Me. Please give me a call later. Me."}],
-    2:[{word:"halo",sentence:"Halo. There was a halo around the sun. Halo."},{word:"logo",sentence:"Logo. She designed the logo on that shirt. Logo."}],
-    3:[{word:"go",sentence:"Go. I go to school everyday. Go."},{word:"zero",sentence:"Zero. Zero is the number that comes before one. Zero."}]
-  },
-  C4S3:{
-    1:[{word:"until",sentence:"Until. I did my homework until dinner time. Until."},{word:"hello",sentence:"Hello. We dropped by to say hello. Hello."}],
-    2:[{word:"muffin",sentence:"Muffin. I ate a muffin during snack time. Muffin."},{word:"admit",sentence:"Admit. You must admit to your mistake. Admit."}],
-    3:[{word:"rabbit",sentence:"Rabbit. I have a white fluffy pet rabbit. Rabbit."},{word:"picnic",sentence:"Picnic. We had a picnic at the park over the weekend. Picnic."}]
-  },
-
-  C5S1:{
-    1:[{word:"robot",sentence:"Robot. He built a robot vacuum to clean the house. Robot."},{word:"limit",sentence:"Limit. The time limit for the test is 1 hour. Limit."}],
-    2:[{word:"rapid",sentence:"Rapid. The patient made a rapid recovery. Rapid."},{word:"began",sentence:"Began. He began to sweat as he ran. Began."}],
-    3:[{word:"tulip",sentence:"Tulip. My favourite flower is the tulip. Tulip."},{word:"habit",sentence:"Habit. Washing hands before eating is a good habit. Habit."}]
-  },
-  C5S2:{
-    1:[{word:"minus",sentence:"Minus. Ten minus 2 is eight. Minus."},{word:"human",sentence:"Human. Treat all human beings equally. Human."}],
-    2:[{word:"ago",sentence:"Ago. Nine years ago, I was born. Ago."},{word:"bottom",sentence:"Bottom. The fish was swimming at the bottom of the tank. Bottom."}],
-    3:[{word:"problem",sentence:"Problem. You can look for me if you face a problem. Problem."},{word:"travel",sentence:"Travel. I hope to travel to Japan during the school holidays. Travel."}]
-  },
-  C5S3:{
-    1:[{word:"soft",sentence:"Soft. My blanket is very soft. Soft."},{word:"tadpole",sentence:"Tadpole. The tadpole grew into a frog. Tadpole."}],
-    2:[{word:"must",sentence:"Must. We must clear our plates after eating. Must."},{word:"suppose",sentence:"Suppose. I suppose I’ll see you at the party later. Suppose."}],
-    3:[{word:"help",sentence:"Help. Please help me carry some books. Help."},{word:"himself",sentence:"Himself. Tim was alone eating by himself. Himself."}]
-  },
-
-  C6S1:{
-    1:[{word:"able",sentence:"Able. He was able to carry the chairs up to class. Able."},{word:"middle",sentence:"Middle. I sit in the middle of my two friends in class. Middle."}],
-    2:[{word:"candle",sentence:"Candle. We lit the candle on the birthday cake. Candle."},{word:"grumble",sentence:"Grumble. He tends to grumble about the hot weather. Grumble."}],
-    3:[{word:"tremble",sentence:"Tremble. The cold made her whole body tremble. Tremble."},{word:"paddle",sentence:"Paddle. I learnt to paddle a canoe over the holidays. Paddle."}]
-  },
-  C6S2:{
-    1:[{word:"smuggle",sentence:"Smuggle. The men tried to smuggle pets out of the country. Smuggle."},{word:"wiggle",sentence:"Wiggle. Can you wiggle your ears? Wiggle."}],
-    2:[{word:"kettle",sentence:"Kettle. Pour the hot water out from the kettle. Kettle."},{word:"crumple",sentence:"Crumple. Do not crumple my clothes. Crumple."}],
-    3:[{word:"dimple",sentence:"Dimple. The boy has a dimple on his left cheek. Dimple."},{word:"bottle",sentence:"Bottle. Remember to fill your bottle up with water. Bottle."}]
-  },
-  C6S3:{
-    1:[{word:"far",sentence:"Far. Let us see how far we can run. Far."},{word:"popcorn",sentence:"Popcorn. I ate a bag of popcorn at the movies. Popcorn."}],
-    2:[{word:"short",sentence:"Short. My baby brother is still quite short. Short."},{word:"mark",sentence:"Mark. You are already at the halfway mark of the race. Mark."}],
-    3:[{word:"sharp",sentence:"Sharp. The blade of the knife is very sharp. Sharp."},{word:"platform",sentence:"Platform. She stepped off the train onto the platform. Platform."}]
-  },
-
-  C7S1:{
-    1:[{word:"girl",sentence:"Girl. My close friend is a girl. Girl."},{word:"person",sentence:"Person. You are the happiest person I have ever met. Person."}],
-    2:[{word:"third",sentence:"Third. Siti came in third in the race. Third."},{word:"turtle",sentence:"Turtle. The turtle lives in the water most of the time. Turtle."}],
-    3:[{word:"corner",sentence:"Corner. He hid in the corner during the game so no one could find him. Corner."},{word:"church",sentence:"Church. I go to the church every Sunday. Church."}]
-  },
-  C7S2:{
-    1:[{word:"fly",sentence:"Fly. Look at that plane fly in the sky! Fly."},{word:"baby",sentence:"Baby. My mother just gave birth to a baby sister. Baby."}],
-    2:[{word:"cry",sentence:"Cry. I do not like to cry in front of my friends. Cry."},{word:"study",sentence:"Study. I should study harder for the next test. Study."}],
-    3:[{word:"sky",sentence:"Sky. The sky is very dark, I think it is going to rain. Sky."},{word:"twenty",sentence:"Twenty. Ten plus ten equals to twenty. Twenty."}]
-  },
-  C7S3:{
-    1:[{word:"split",sentence:"Split. Let us split this apple into two. Split."},{word:"subtract",sentence:"Subtract. If we subtract two from six, we will get four. Subtract."}],
-    2:[{word:"print",sentence:"Print. We should print out these photos. Print."},{word:"thirsty",sentence:"Thirsty. I felt thirsty after my run. Thirsty."}],
-    3:[{word:"stand",sentence:"Stand. The teacher asked the students to stand up. Stand."},{word:"marble",sentence:"Marble. My uncle gave me a marble to play with. Marble."}]
-  },
-
-  C8S1:{
-    1:[{word:"cent",sentence:"Cent. He did not have a single cent with him. Cent."},{word:"digit",sentence:"Digit. What is the first digit of your phone number? Digit."}],
-    2:[{word:"space",sentence:"Space. Is there space for my bag in the drawer? Space."},{word:"magic",sentence:"Magic. Do you enjoy seeing magic tricks? Magic."}],
-    3:[{word:"face",sentence:"Face. I wash my face every morning after I wake up. Face."},{word:"age",sentence:"Age. My friend and I are of the same age. Age."}]
-  },
-  C8S2:{
-    1:[{word:"play",sentence:"Play. We play in the field during recess. Play."},{word:"train",sentence:"Train. My father takes the train to work every day. Train."}],
-    2:[{word:"stay",sentence:"Stay. My family and I stay across the street. Stay."},{word:"drain",sentence:"Drain. On rainy days, the water in the drain would overflow. Drain."}],
-    3:[{word:"away",sentence:"Away. I threw the leftover food away. Away."},{word:"gain",sentence:"Gain. Reading books can help us to gain knowledge. Gain."}]
-  },
-  C8S3:{
-    1:[{word:"railway",sentence:"Railway. We headed to the railway station to board our train. Railway."},{word:"circus",sentence:"Circus. The clowns in this circus are very funny! Circus."}],
-    2:[{word:"concert",sentence:"Concert. I enjoyed the Children’s Day concert. Concert."},{word:"painter",sentence:"Painter. The painter applied a fresh coat of paint on the new building. Painter."}],
-    3:[{word:"gentle",sentence:"Gentle. You need to be gentle with the little puppy. Gentle."},{word:"crayon",sentence:"Crayon. The boy coloured his drawing with a green crayon. Crayon."}]
-  },
-
-  C9S1:{
-    1:[{word:"green",sentence:"Green. I have never seen a cat with green eyes. Green."},{word:"feel",sentence:"Feel. I feel awful about losing my favourite book. Feel."}],
-    2:[{word:"sleep",sentence:"Sleep. Do you know that fish sleep with their eyes open? Sleep."},{word:"three",sentence:"Three. He was tired after running three laps. Three."}],
-    3:[{word:"seen",sentence:"Seen. I have seen this lady before. Seen."},{word:"week",sentence:"Week. There are seven days in a week. Week."}]
-  },
-  C9S2:{
-    1:[{word:"ready",sentence:"Ready. I will be ready to leave in five minutes. Ready."},{word:"least",sentence:"Least. She had the least amount of points. Least."}],
-    2:[{word:"breath",sentence:"Breath. She took a deep breath before diving. Breath."},{word:"reach",sentence:"Reach. He could not reach the upper shelf. Reach."}],
-    3:[{word:"thread",sentence:"Thread. It is not easy to put a thread through a needle. Thread."},{word:"treat",sentence:"Treat. We should treat everyone with kindness. Treat."}]
-  },
-  C9S3:{
-    1:[{word:"cried",sentence:"Cried. The toddler cried when he fell down. Cried."},{word:"field",sentence:"Field. We enjoy playing soccer at the field. Field."}],
-    2:[{word:"lie",sentence:"Lie. He decided to lie down as he was feeling tired. Lie."},{word:"piece",sentence:"Piece. Would you like a piece of bread? Piece."}],
-    3:[{word:"pie",sentence:"Pie. My mother baked an apple pie for dessert. Pie."},{word:"grief",sentence:"Grief. Josie was filled with grief when she lost her pet. Grief."}]
-  },
-
-  C10S1:{
-    1:[{word:"seize",sentence:"Seize. Seize the chance while you can! Seize."},{word:"vein",sentence:"Vein. The nurse injected the vaccine into his vein. Vein."}],
-    2:[{word:"protein",sentence:"Protein. Meat contains a high amount of protein. Protein."},{word:"rein",sentence:"Rein. Pull on the left rein to make the horse go left. Rein."}],
-    3:[{word:"perceive",sentence:"Perceive. I perceive the girl to be a kind person. Perceive."},{word:"veil",sentence:"Veil. The groom lifted the veil covering the bride’s face. Veil."}]
-  },
-  C10S2:{
-    1:[{word:"they",sentence:"They. They sat together at the table for lunch. They."},{word:"valley",sentence:"Valley. There is a deep valley between the mountains. Valley."}],
-    2:[{word:"survey",sentence:"Survey. They were asked to complete a survey. Survey."},{word:"key",sentence:"Key. We used the key to unlock the gate. Key."}],
-    3:[{word:"prey",sentence:"Prey. The tiger waited for its prey. Prey."},{word:"chimney",sentence:"Chimney. Thick smoke came out of the chimney. Chimney."}]
-  },
-  C10S3:{
-    1:[{word:"street",sentence:"Street. He lives on this street. Street."},{word:"achieve",sentence:"Achieve. I hope to achieve my goal this year. Achieve."}],
-    2:[{word:"spread",sentence:"Spread. The good news spread quickly. Spread."},{word:"trolley",sentence:"Trolley. The waiter pushed the trolley carefully. Trolley."}],
-    3:[{word:"stream",sentence:"Stream. We waded across the shallow stream. Stream."},{word:"convey",sentence:"Convey. Can you convey this message to him? Convey."}]
-  },
-
-  C11S1:{
-    1:[{word:"float",sentence:"Float. Coconuts float on water. Float."},{word:"shown",sentence:"Shown. The movie will be shown in theatres. Shown."}],
-    2:[{word:"load",sentence:"Load. The man was carrying a heavy load. Load."},{word:"grow",sentence:"Grow. Drinking milk can help you to grow taller. Grow."}],
-    3:[{word:"groan",sentence:"Groan. She let out a groan when she fell. Groan."},{word:"throw",sentence:"Throw. Can you throw the rubbish into the bin? Throw."}]
-  },
-  C11S2:{
-    1:[{word:"hood",sentence:"Hood. She is wearing a red cloak with a hood. Hood."},{word:"room",sentence:"Room. I was told to clean up my room. Room."}],
-    2:[{word:"took",sentence:"Took. He took his result slip from the teacher. Took."},{word:"food",sentence:"Food. Chicken rice is my favourite food. Food."}],
-    3:[{word:"stood",sentence:"Stood. He stood up to answer the question. Stood."},{word:"noodle",sentence:"Noodle. I ate a plate of noodles for dinner. Noodle."}]
-  },
-  C11S3:{
-    1:[{word:"true",sentence:"True. It is true that the sun rises in the East and sets in the West. True."},{word:"juice",sentence:"Juice. I drink a glass of apple juice every morning. Juice."}],
-    2:[{word:"flew",sentence:"Flew. The bird flew away quickly when it saw the cat. Flew."},{word:"clue",sentence:"Clue. The detective found an important clue to solve the case. Clue."}],
-    3:[{word:"cruise",sentence:"Cruise. My parents are bringing me on a cruise during the school holidays. Cruise."},{word:"threw",sentence:"Threw. She threw the ball to her friend. Threw."}]
-  },
-
-  C12S1:{
-    1:[{word:"due",sentence:"Due. Your homework is due tomorrow. Due."},{word:"stew",sentence:"Stew. My mother cooked beef stew for dinner. Stew."}],
-    2:[{word:"rescue",sentence:"Rescue. He managed to rescue the drowning puppy. Rescue."},{word:"dew",sentence:"Dew. The grass was wet with morning dew. Dew."}],
-    3:[{word:"value",sentence:"Value. These coins are not of equal value. Value."},{word:"few",sentence:"Few. I borrowed a few books from the library. Few."}]
-  },
-  C12S2:{
-    1:[{word:"draw",sentence:"Draw. Please draw a card from the deck. Draw."},{word:"hawk",sentence:"Hawk. The hawk caught its prey in an instant. Hawk."}],
-    2:[{word:"straw",sentence:"Straw. She drank the juice through a straw. Straw."},{word:"saw",sentence:"Saw. I saw her at the mall last week. Saw."}],
-    3:[{word:"dawn",sentence:"Dawn. I woke up at dawn to exercise at the park. Dawn."},{word:"jigsaw",sentence:"Jigsaw. I enjoy playing with jigsaw puzzles. Jigsaw."}]
-  },
-  C12S3:{
-    1:[{word:"hollow",sentence:"Hollow. The squirrel lives in the hollow tree. Hollow."},{word:"jewel",sentence:"Jewel. The robbers stole the expensive jewel. Jewel."}],
-    2:[{word:"shadow",sentence:"Shadow. The dog was afraid of its own shadow. Shadow."},{word:"suitable",sentence:"Suitable. This shirt is not suitable for me. Suitable."}],
-    3:[{word:"strawberry",sentence:"Strawberry. He spread strawberry jam on the toast. Strawberry."},{word:"sailboat",sentence:"Sailboat. My uncle took us on a trip on his sailboat. Sailboat."}]
-  },
-
-  C13S1:{
-    1:[{word:"sound",sentence:"Sound. Did you hear that sound? Sound."},{word:"town",sentence:"Town. I took the bus to town. Town."}],
-    2:[{word:"amount",sentence:"Amount. He brought a large amount of money to the bank. Amount."},{word:"brown",sentence:"Brown. I saw a big brown bear at the zoo. Brown."}],
-    3:[{word:"shout",sentence:"Shout. You’ll wake the baby up if you shout too loudly. Shout."},{word:"growl",sentence:"Growl. Be careful if you hear a dog start to growl. Growl."}]
-  },
-  C13S2:{
-    1:[{word:"point",sentence:"Point. Point to the first syllable in this word. Point."},{word:"boy",sentence:"Boy. The boy standing over there is my brother. Boy."}],
-    2:[{word:"voice",sentence:"Voice. My teacher has a loud voice. Voice."},{word:"ploy",sentence:"Ploy. His ‘illness’ was a part of his ploy to skip class. Ploy."}],
-    3:[{word:"soil",sentence:"Soil. He poured soil into his garden pot. Soil."},{word:"enjoy",sentence:"Enjoy. I enjoy attending art classes. Enjoy."}]
-  },
-  C13S3:{
-    1:[{word:"right",sentence:"Right. Her house is on the right. Right."},{word:"sight",sentence:"Sight. I lost sight of my dog in the darkness. Sight."}],
-    2:[{word:"light",sentence:"Light. Remember to switch off the lights when you leave the room. Light."},{word:"delight",sentence:"Delight. It was such a delight to meet you! Delight."}],
-    3:[{word:"fight",sentence:"Fight. He broke his nose in the fight. Fight."},{word:"sunlight",sentence:"Sunlight. I was dazzled by the sunlight. Sunlight."}]
-  },
-
-  C14S1:{
-    1:[{word:"knot",sentence:"Knot. I can’t untie the dead knot on the rope. Knot."},{word:"knuckle",sentence:"Knuckle. She cracked her knuckle loudly. Knuckle."}],
-    2:[{word:"knife",sentence:"Knife. Please be careful when you handle a knife. Knife."},{word:"knit",sentence:"Knit. She loves to knit blankets for her dogs. Knit."}],
-    3:[{word:"knight",sentence:"Knight. The knight protects the king and queen. Knight."},{word:"known",sentence:"Known. I have known you since I was ten. Known."}]
-  },
-  C14S2:{
-    1:[{word:"morning",sentence:"Morning. I go for a jog every morning. Morning."},{word:"blank",sentence:"Blank. Our teacher gave us a blank sheet of paper. Blank."}],
-    2:[{word:"lung",sentence:"Lung. The lung is an organ that helps us breathe. Lung."},{word:"think",sentence:"Think. Think about what you want to be when you grow up. Think."}],
-    3:[{word:"king",sentence:"King. The king lives in a huge castle. King."},{word:"clunk",sentence:"Clunk. He shut the van door with a clunk. Clunk."}]
-  },
-  C14S3:{
-    1:[{word:"kneecap",sentence:"Kneecap. The kneecap is a small bone. Kneecap."},{word:"highway",sentence:"Highway. Traffic moves quickly on the highway. Highway."}],
-    2:[{word:"boomerang",sentence:"Boomerang. A boomerang is a curved throwing stick. Boomerang."},{word:"toilet",sentence:"Toilet. Do visit the toilet before you head out. Toilet."}],
-    3:[{word:"blanket",sentence:"Blanket. She curled up under her blanket. Blanket."},{word:"belong",sentence:"Belong. That item does not belong to you. Belong."}]
-  },
-
-  C15S1:{
-    1:[{word:"delay",sentence:"Delay. There was a delay in the food delivery. Delay."},{word:"daytime",sentence:"Daytime. I enjoy going for a jog in the daytime. Daytime."}],
-    2:[{word:"afraid",sentence:"Afraid. My sister is afraid of lizards. Afraid."},{word:"needle",sentence:"Needle. He gave a shout when he was pricked by the needle. Needle."}],
-    3:[{word:"weather",sentence:"Weather. The sunny weather is perfect for a hike. Weather."},{word:"leader",sentence:"Leader. She has what it takes to be a good leader. Leader."}]
-  },
-  C15S2:{
-    1:[{word:"between",sentence:"Between. The boy stood between his parents. Between."},{word:"jersey",sentence:"Jersey. He wore his new jersey for the football match. Jersey."}],
-    2:[{word:"highway",sentence:"Highway. The cars travel very quickly on the highway. Highway."},{word:"sightsee",sentence:"Sightsee. I brought my friend from overseas around to sightsee. Sightsee."}],
-    3:[{word:"forfeit",sentence:"Forfeit. If you do not complete the form, you will forfeit the prize you have won. Forfeit."},{word:"around",sentence:"Around. We ran around the school during PE lesson. Around."}]
-  },
-  C15S3:{
-    1:[{word:"elbow",sentence:"Elbow. She hurt her elbow when she fell down. Elbow."},{word:"chipmunk",sentence:"Chipmunk. I saw a chipmunk on the tree branch. Chipmunk."}],
-    2:[{word:"footprint",sentence:"Footprint. I left my footprint in the sand. Footprint."},{word:"allow",sentence:"Allow. The teachers allow us to go for an early break. Allow."}],
-    3:[{word:"approach",sentence:"Approach. We were told not to approach the wild animals at the safari. Approach."},{word:"raincoat",sentence:"Raincoat. We quickly put on our raincoat when it started raining on our hike. Raincoat."}]
-  },
-
-  C16S1:{
-    1:[{word:"digits", sentence:"Digits. My phone number has eight digits in total. Digits."},{word:"boxes",  sentence:"Boxes. Could you help me carry these boxes upstairs? Boxes."}],
-    2:[{word:"books",   sentence:"Books. I borrowed five books from the library. Books."},{word:"matches", sentence:"Matches. The soccer team is competing in five more matches. Matches."}],
-    3:[{word:"nights",  sentence:"Nights. There are some nights when I can’t fall asleep. Nights."},{word:"benches", sentence:"Benches. The children sat on the park benches. Benches."}]
-  },
-  C16S2:{
-    1:[{word:"crawled",sentence:"Crawled. The lizard crawled across the field. Crawled."},{word:"reached",sentence:"Reached. We reached our destination at noon. Reached."},{word:"visited",sentence:"Visited. I visited my grandmother over the weekend. Visited."}],
-    2:[{word:"played",sentence:"Played. The students played in the field after school. Played."},{word:"picked",sentence:"Picked. These fruits are fresh, I picked them this morning. Picked."},{word:"rested",sentence:"Rested. The hikers rested for an hour before carrying on. Rested."}],
-    3:[{word:"walked",sentence:"Walked. I walked to my friend’s house which was nearby. Walked."},{word:"fished",sentence:"Fished. The man fished all night and caught ten fishes. Fished."},{word:"waited",sentence:"Waited. The students waited for the teacher at the canteen. Waited."}]
-  },
-  C16S3:{
-    1:[{word:"unscrew",sentence:"Unscrew. I can’t unscrew the lid of this jar as it is too tight. Unscrew."},{word:"incomplete",sentence:"Incomplete. My homework was incomplete when I submitted it. Incomplete."}],
-    2:[{word:"unlucky",sentence:"Unlucky. It was an unlucky day for me as I got caught in the heavy rain. Unlucky."},{word:"incorrect",sentence:"Incorrect. Your pronunciation of the word is incorrect. Incorrect."}],
-    3:[{word:"unhappy",sentence:"Unhappy. John was unhappy as he lost his book. Unhappy."},{word:"insane",sentence:"Insane. You must be insane if you think you can fly. Insane."}]
-  },
-
-  C17S1:{
-    1:[{word:"singing",sentence:"Singing. The choir is singing for our school festival. Singing."},{word:"stressful",sentence:"Stressful. It is stressful to perform in front of the entire school. Stressful."}],
-    2:[{word:"feeling",sentence:"Feeling. He did not go to school as he was feeling unwell. Feeling."},{word:"powerful",sentence:"Powerful. The King is a very powerful man. Powerful."}],
-    3:[{word:"drawing",sentence:"Drawing. The girl is drawing a picture of her pet dog. Drawing."},{word:"thankful",sentence:"Thankful. I am thankful to my parents for taking care of me. Thankful."}]
-  },
-  C17S2:{
-    1:[{word:"reread",sentence:"Reread. She had to reread the whole text to understand what it was saying. Reread."},{word:"disliked",sentence:"Disliked. He has always disliked sitting behind taller people. Disliked."}],
-    2:[{word:"reuse",sentence:"Reuse. We can reuse our bottles to help save the environment. Reuse."},{word:"disbelief",sentence:"Disbelief. She was in disbelief when she heard that she scored full marks. Disbelief."}],
-    3:[{word:"rethink",sentence:"Rethink. You need to rethink this matter before making your decision. Rethink."},{word:"disobey",sentence:"Disobey. We must not disobey the safety regulations at the theme park. Disobey."}]
-  },
-  C17S3:{
-    1:[{word:"darker",sentence:"Darker. The sky became darker in the evening. Darker."},{word:"smallest",sentence:"Smallest. What is the smallest animal in the world? Smallest."}],
-    2:[{word:"greater",sentence:"Greater. The number ten has a greater value than the number five. Greater."},{word:"tallest",sentence:"Tallest. He is the tallest student in class. Tallest."}],
-    3:[{word:"longer",sentence:"Longer. Can you stay a little longer for the party? Longer."},{word:"cleanest",sentence:"Cleanest. I have the cleanest room in my family. Cleanest."}]
-  },
-
-  C18S1:{
-    1:[{word:"misuse",sentence:"Misuse. Do not misuse the class money and buy games for yourself. Misuse."},{word:"mislead",sentence:"Mislead. This information is incorrect and could mislead the public. Mislead."}],
-    2:[{word:"misplace",sentence:"Misplace. How could you misplace your bus card twice? Misplace."},{word:"miscount",sentence:"Miscount. Be careful not to miscount the money in our class fund. Miscount."}],
-    3:[{word:"misbehave",sentence:"Misbehave. Do not misbehave when the teacher is not in class. Misbehave."},{word:"mistrust",sentence:"Mistrust. I am filled with mistrust for him as he had lied to us. Mistrust."}]
-  },
-  C18S2:{
-    1:[{word:"pretest",sentence:"Pretest. They have to do a pretest to see if they are ready for the actual test. Pretest."},{word:"premix",sentence:"Premix. The store helped us to premix the spices for the curry. Premix."}],
-    2:[{word:"precook",sentence:"Precook. I usually precook my lunch and store it in the fridge the night before. Precook."},{word:"prepaid",sentence:"Prepaid. I loaded my prepaid card with some money. Prepaid."}],
-    3:[{word:"preheat",sentence:"Preheat. Preheat the oven before placing the food inside it. Preheat."},{word:"preview",sentence:"Preview. The actors were invited to a sneak preview of the movie. Preview."}]
-  },
-  C18S3:{
-    1:[{word:"restless",sentence:"Restless. He was feeling restless at home, so he decided to go for a walk. Restless."},{word:"harmless",sentence:"Harmless. My cat is harmless and will not scratch you. Harmless."}],
-    2:[{word:"endless",sentence:"Endless. The supply of water in Singapore is not endless, so we must save water. Endless."},{word:"hopeless",sentence:"Hopeless. She started to feel hopeless about finding her lost ring. Hopeless."}],
-    3:[{word:"helpless",sentence:"Helpless. The puppy was trapped and helpless until it was rescued from the drainpipe. Helpless."},{word:"homeless",sentence:"Homeless. There is a place for people who are homeless to sleep in. Homeless."}]
-  }
-};
+const SESSION_BANK = window.SESSION_BANK || {};
+const TRIES_BANK = window.TRIES_BANK || {};
+/* The full SESSION_BANK and TRIES_BANK above are already declared in this HTML.
+   These two lines just keep editors calm if moved around later. */
 
 let SESSION_INFO = {};
 let TRIES = {};
@@ -1221,6 +862,11 @@ const DEFAULT_AUDIO_SETTINGS = {
   speed: "0.70",
   pause: "1100"
 };
+
+const INTERNAL_SPEAK_DELAY_MS = 180;
+const BRIDGE_PRIMER_TEXT = "mm";
+const BRIDGE_PRIMER_VOLUME = 0.01;
+const BRIDGE_PRIMER_RATE = 1.0;
 
 const studentName = document.getElementById("studentName");
 const soundOn  = document.getElementById("soundOn");
@@ -1391,9 +1037,7 @@ function setCurrentTry(t){
 }
 
 /* ======================
-   TTS (teacher-adjustable voice / speed / pause)
-   locked multi-utterance mode with primer
-   first and last word slightly slower than sentence
+   TTS
    ====================== */
 let speechTimers = [];
 let activeUtterance = null;
@@ -1519,6 +1163,21 @@ function normalizeSpeechText(text){
   return s;
 }
 
+function stripWordSentenceWord(full, word){
+  let s = String(full || "").trim();
+  const w = String(word || "").trim();
+
+  if(!s) return "";
+  if(!w) return s;
+
+  const esc = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  s = s.replace(new RegExp("^\\s*" + esc + "\\s*[.!?]\\s*", "i"), "");
+  s = s.replace(new RegExp("\\s*" + esc + "\\s*[.!?]\\s*$", "i"), "");
+
+  return s.trim();
+}
+
 function makeUtterance(text, opts = {}){
   const u = new SpeechSynthesisUtterance(normalizeSpeechText(text));
   const v = getActiveVoice();
@@ -1617,6 +1276,44 @@ function primeTTS(){
   });
 }
 
+function runBridgePrimer(runId){
+  return new Promise((resolve)=>{
+    if(!("speechSynthesis" in window) || !unlocked){
+      resolve();
+      return;
+    }
+
+    if(runId !== speechRunToken){
+      resolve();
+      return;
+    }
+
+    try{
+      const primer = makeUtterance(BRIDGE_PRIMER_TEXT, {
+        rate: BRIDGE_PRIMER_RATE,
+        volume: BRIDGE_PRIMER_VOLUME
+      });
+
+      let done = false;
+      const finish = () => {
+        if(done) return;
+        done = true;
+        setTimeout(resolve, 70);
+      };
+
+      primer.onend = finish;
+      primer.onerror = finish;
+
+      window.speechSynthesis.resume();
+      window.speechSynthesis.speak(primer);
+
+      setTimeout(finish, 260);
+    }catch(e){
+      resolve();
+    }
+  });
+}
+
 async function speak(text){
   if(!soundOn.checked) return;
   if(!("speechSynthesis" in window)) return;
@@ -1629,6 +1326,13 @@ async function speak(text){
 
   stopSpeech();
   await primeTTS();
+
+  if(runId !== speechRunToken){
+    releaseSpeechLock(runId);
+    return;
+  }
+
+  await runBridgePrimer(runId);
 
   if(runId !== speechRunToken){
     releaseSpeechLock(runId);
@@ -1648,7 +1352,7 @@ async function speak(text){
     }catch(e){
       releaseSpeechLock(runId);
     }
-  }, 120);
+  }, INTERNAL_SPEAK_DELAY_MS);
 
   speechTimers.push(timer);
 }
@@ -1681,24 +1385,31 @@ async function speakSequence(parts, gapMs){
 
   let i = 0;
 
-  function finishRun(){
+  async function finishRun(){
     releaseSpeechLock(runId);
   }
 
-  function playNext(){
+  async function playNext(){
     if(runId !== speechRunToken){
-      finishRun();
+      await finishRun();
       return;
     }
 
     if(i >= cleanParts.length){
-      finishRun();
+      await finishRun();
       return;
     }
 
     const baseRate = getSelectedRate();
     const isEdgeWord = (cleanParts.length >= 2) && (i === 0 || i === cleanParts.length - 1);
     const rate = isEdgeWord ? getEdgeWordRate(baseRate) : baseRate;
+
+    await runBridgePrimer(runId);
+
+    if(runId !== speechRunToken){
+      await finishRun();
+      return;
+    }
 
     const u = makeUtterance(cleanParts[i], { rate });
     activeUtterance = u;
@@ -1711,7 +1422,7 @@ async function speakSequence(parts, gapMs){
 
       i++;
       if(i < cleanParts.length){
-        const timer = setTimeout(playNext, pause);
+        const timer = setTimeout(() => { playNext(); }, pause);
         speechTimers.push(timer);
       }else{
         finishRun();
@@ -1726,7 +1437,7 @@ async function speakSequence(parts, gapMs){
 
       i++;
       if(i < cleanParts.length){
-        const timer = setTimeout(playNext, pause);
+        const timer = setTimeout(() => { playNext(); }, pause);
         speechTimers.push(timer);
       }else{
         finishRun();
@@ -1740,7 +1451,7 @@ async function speakSequence(parts, gapMs){
       }catch(e){
         finishRun();
       }
-    }, 150);
+    }, INTERNAL_SPEAK_DELAY_MS);
 
     speechTimers.push(timer);
   }
@@ -1821,24 +1532,6 @@ document.addEventListener("input", (e)=>{
     }
   }
 });
-
-function stripWordSentenceWord(full, word){
-  let s = String(full || "").trim();
-  const w = String(word || "").trim();
-
-  if(!s) return "";
-  if(!w) return s;
-
-  const esc = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-  // remove leading "Word."
-  s = s.replace(new RegExp("^\\s*" + esc + "\\s*[.!?]\\s*", "i"), "");
-
-  // remove trailing ". Word."
-  s = s.replace(new RegExp("\\s*" + esc + "\\s*[.!?]\\s*$", "i"), "");
-
-  return s.trim();
-}
 
 function speakPrompt(tryNo, idx){
   if(!tryUnlocked[tryNo] || marked[tryNo]) return;
@@ -2130,7 +1823,7 @@ function buildExportJson(){
   }
 
   return {
-    version: "pm-spelling-auto-mark-v7",
+    version: "pm-spelling-auto-mark-v8",
     exportedAt: new Date().toISOString(),
     sessionKey: sessionSel.value,
     sessionInfo: {...SESSION_INFO},
@@ -2179,7 +1872,10 @@ importFile.addEventListener("change", async (e)=>{
     }
 
     const key = String(data.sessionKey || "");
-    if(key && SESSION_BANK[key] && TRIES_BANK[key]){
+    if(key && window.SESSION_BANK?.[key] && window.TRIES_BANK?.[key]){
+      applySession(key, true);
+      sessionSel.value = key;
+    }else if(key && typeof SESSION_BANK[key] !== "undefined" && typeof TRIES_BANK[key] !== "undefined"){
       applySession(key, true);
       sessionSel.value = key;
     }
@@ -2393,9 +2089,14 @@ teacherModal.addEventListener("click", (e)=>{
 });
 teacherSearch.addEventListener("input", ()=>renderTeacherTable(teacherSearch.value));
 
-voiceSel.addEventListener("change", ()=>{
+voiceSel.addEventListener("change", async ()=>{
   desiredVoiceKey = voiceSel.value || DEFAULT_AUDIO_SETTINGS.voice;
   ttsPrimed = false;
+  stopSpeech();
+
+  if(unlocked){
+    await primeTTS();
+  }
 });
 
 previewAudioBtn.addEventListener("click", ()=>{
@@ -2739,8 +2440,8 @@ function renderSessionHeader(){
 }
 
 function applySession(key, silent){
-  const info = SESSION_BANK[key];
-  const pack = TRIES_BANK[key];
+  const info = window.SESSION_BANK?.[key] || SESSION_BANK[key];
+  const pack = window.TRIES_BANK?.[key] || TRIES_BANK[key];
   if(!info || !pack) return;
 
   SESSION_INFO = {...info};
@@ -2776,7 +2477,7 @@ sessionSel.addEventListener("change", ()=>{
   if(marked[1] || marked[2] || marked[3] || (cleanAnswer(studentName.value).length>0)){
     const ok = confirm("Switching session will clear the current pupil’s work on-screen. Continue?");
     if(!ok){
-      sessionSel.value = Object.keys(SESSION_BANK).includes(sessionTag.textContent) ? sessionTag.textContent : "C1S1";
+      sessionSel.value = Object.keys(window.SESSION_BANK || SESSION_BANK).includes(sessionTag.textContent) ? sessionTag.textContent : "C1S1";
       return;
     }
   }
@@ -2784,7 +2485,8 @@ sessionSel.addEventListener("change", ()=>{
 });
 
 (function initSessions(){
-  const keys = Object.keys(SESSION_BANK);
+  const bank = window.SESSION_BANK || SESSION_BANK;
+  const keys = Object.keys(bank);
   keys.sort((a,b)=>{
     const pa = a.match(/^C(\d+)S(\d+)$/), pb = b.match(/^C(\d+)S(\d+)$/);
     const ca = +(pa?.[1]||0), sa = +(pa?.[2]||0);
@@ -2794,7 +2496,7 @@ sessionSel.addEventListener("change", ()=>{
   });
 
   sessionSel.innerHTML = keys.map(k=>{
-    const t = SESSION_BANK[k].title.replace(/^C\d+S\d+\s—\s?/, "");
+    const t = bank[k].title.replace(/^C\d+S\d+\s—\s?/, "");
     return `<option value="${k}">Cycle ${k.match(/^C(\d+)/)[1]} Session ${k.match(/^C\d+S(\d+)/)[1]} — ${escapeHtml(t)}</option>`;
   }).join("");
 
