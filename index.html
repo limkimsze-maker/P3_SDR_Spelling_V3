@@ -819,7 +819,7 @@
           <div><b>1. Key in pupil name</b> at the top of the page.</div>
           <div><b>2. Choose the session</b> from the session dropdown.</div>
           <div><b>3. Click “Unlock Audio”</b> once before using the speaker buttons.</div>
-          <div><b>4. Click 🔊</b> beside a word to play the audio in this format: <b>word → sentence → word</b>.</div>
+          <div><b>4. Click 🔊</b> beside a word to play the audio in this format: <b>word → sentence → word</b>. The <b>first and last word are slightly slower</b> for better clarity.</div>
           <div><b>5. Open Teacher Panel</b> to adjust <b>Voice</b>, <b>Speed</b>, and <b>Pause</b>. Use <b>Preview Audio</b> to test it.</div>
           <div><b>6. Click “Save Audio Settings”</b> if you want this browser to remember your preferred audio settings.</div>
           <div><b>7. Pupils type their spelling</b>, then click <b>MARK</b> for that try.</div>
@@ -1392,7 +1392,8 @@ function setCurrentTry(t){
 
 /* ======================
    TTS (teacher-adjustable voice / speed / pause)
-   locked mode: page will not interrupt its own audio
+   locked multi-utterance mode with primer
+   first and last word slightly slower than sentence
    ====================== */
 let speechTimers = [];
 let activeUtterance = null;
@@ -1495,6 +1496,11 @@ function getSelectedRate(){
 function getSelectedPause(){
   const n = parseInt(pauseSel?.value || DEFAULT_AUDIO_SETTINGS.pause, 10);
   return Number.isFinite(n) ? n : 1100;
+}
+
+function getEdgeWordRate(baseRate){
+  if(baseRate <= 0.70) return baseRate;
+  return Math.max(0.52, baseRate - 0.08);
 }
 
 function refreshVoice(){
@@ -1690,10 +1696,9 @@ async function speakSequence(parts, gapMs){
       return;
     }
 
-    const isSingleWord = /^[A-Za-z'-]+[.!?]?$/.test(cleanParts[i]);
-    const rate = isSingleWord
-      ? Math.max(0.52, getSelectedRate() - 0.10)
-      : getSelectedRate();
+    const baseRate = getSelectedRate();
+    const isEdgeWord = (cleanParts.length >= 2) && (i === 0 || i === cleanParts.length - 1);
+    const rate = isEdgeWord ? getEdgeWordRate(baseRate) : baseRate;
 
     const u = makeUtterance(cleanParts[i], { rate });
     activeUtterance = u;
@@ -1848,7 +1853,7 @@ unlockAudioBtn.addEventListener("click", async ()=>{
   ensureUnlocked();
   refreshVoice();
   await primeTTS();
-  speak("Audio is ready.");
+  await speak("Audio is ready.");
 });
 
 function askPassword(){
@@ -2105,7 +2110,7 @@ function buildExportJson(){
   }
 
   return {
-    version: "pm-spelling-auto-mark-v6",
+    version: "pm-spelling-auto-mark-v7",
     exportedAt: new Date().toISOString(),
     sessionKey: sessionSel.value,
     sessionInfo: {...SESSION_INFO},
@@ -2379,7 +2384,7 @@ previewAudioBtn.addEventListener("click", ()=>{
   speakSequence(
     [
       "Map",
-      "We can find our way home using a map",
+      "We can find our way home using a map.",
       "Map"
     ],
     getSelectedPause()
