@@ -1822,6 +1822,24 @@ document.addEventListener("input", (e)=>{
   }
 });
 
+function stripWordSentenceWord(full, word){
+  let s = String(full || "").trim();
+  const w = String(word || "").trim();
+
+  if(!s) return "";
+  if(!w) return s;
+
+  const esc = w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  // remove leading "Word."
+  s = s.replace(new RegExp("^\\s*" + esc + "\\s*[.!?]\\s*", "i"), "");
+
+  // remove trailing ". Word."
+  s = s.replace(new RegExp("\\s*" + esc + "\\s*[.!?]\\s*$", "i"), "");
+
+  return s.trim();
+}
+
 function speakPrompt(tryNo, idx){
   if(!tryUnlocked[tryNo] || marked[tryNo]) return;
   const item = TRIES[tryNo][idx];
@@ -1829,10 +1847,12 @@ function speakPrompt(tryNo, idx){
   setCurrentTry(tryNo);
   setDateIfEmpty(tryNo);
 
+  const middleSentence = stripWordSentenceWord(item.sentence, item.word);
+
   speakSequence(
     [
       item.word,
-      item.sentence,
+      middleSentence,
       item.word
     ],
     getSelectedPause()
